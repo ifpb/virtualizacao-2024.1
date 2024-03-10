@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/focal64"
+  config.vm.network "private_network", ip: "192.168.56.20"
+  config.vm.synced_folder "./data", "/vagrant_data"
+
+  # Enable nested virtualization in VirtualBox
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt update && sudo apt upgrade
+    sudo apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virtinst virt-manager libguestfs-tools libosinfo-bin
+    sudo systemctl enable libvirtd
+    sudo systemctl start libvirtd
+    sudo usermod -aG kvm $USER
+    sudo usermod -aG libvirt $USER
+  SHELL
+end

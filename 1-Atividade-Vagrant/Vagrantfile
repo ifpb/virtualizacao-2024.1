@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+    config.vm.provision "shell", inline: "echo Aloh mundo!!!"
+    config.vm.provision "shell", inline: "sudo apt update && sudo apt install -y iperf"
+  
+    config.vm.define "vm1" do |vm1|
+      vm1.vm.hostname = "vm1-servidor"
+      vm1.vm.box = "ubuntu/jammy64"
+      vm1.vm.network "private_network", ip: "192.168.56.10" 
+      vm1.vm.provision "shell", inline: "echo Aloh mundo da VM1!!!"
+      vm1.vm.provision "shell", inline: "sudo iperf -s -D"
+    end
+    
+    config.vm.define "vm2" do |vm2|
+      vm2.vm.box = "ubuntu/jammy64"
+      vm2.vm.hostname = "vm1-cliente"
+      vm2.vm.network "private_network", ip: "192.168.56.11"
+      vm2.vm.provision "shell", inline: "echo Aloh mundo da VM2!!!"
+      vm2.vm.provision "shell", inline: "while true; do iperf -c 192.168.56.10 -t 2 >> /var/log/iperf.log 2>&1; done &"
+    end 
+  end
